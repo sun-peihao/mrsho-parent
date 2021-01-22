@@ -1,10 +1,13 @@
 package com.baidu.shop.serviceImpl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baidu.shop.base.BaseApiService;
 import com.baidu.shop.base.Result;
 import com.baidu.shop.dto.BrandDTO;
 import com.baidu.shop.entity.BrandEntity;
+import com.baidu.shop.entity.CategoryBrandEntity;
 import com.baidu.shop.mapper.BrandMapper;
+import com.baidu.shop.mapper.CategoryBrandMapper;
 import com.baidu.shop.service.BrandService;
 import com.baidu.shop.utils.BaiduBeanUtil;
 import com.github.pagehelper.PageHelper;
@@ -13,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -27,15 +32,14 @@ public class BrandServiceImpl extends BaseApiService implements BrandService {
     @Autowired
     private BrandMapper brandMapper;
 
+    @Autowired
+    private CategoryBrandMapper categoryBrandMapper;
+
     @Override
     public Result<PageInfo<BrandEntity>> getBrandInfo(BrandDTO brandDTO) {
         //分页
         PageHelper.startPage(brandDTO.getPage(),brandDTO.getRows());
-//        String isOrder = "asc";
         if (!StringUtils.isEmpty(brandDTO.getSort())){
-//            if (Boolean.valueOf(brandDTO.getOrder())){
-//                isOrder = "desc";
-//            }
             PageHelper.orderBy(brandDTO.getOrderBy());
         }
 
@@ -49,5 +53,28 @@ public class BrandServiceImpl extends BaseApiService implements BrandService {
         PageInfo<BrandEntity> pageInfo = new PageInfo<>(brandEntities);
 
         return this.setResultSuccess(pageInfo);
+    }
+
+    @Override
+    public Result<JSONObject> save(BrandDTO brandDTO) {
+        BrandEntity brandEntity = BaiduBeanUtil.copyProperties(brandDTO,BrandEntity.class);
+        //通用mapper新增返回主键
+        brandMapper.insertSelective(brandEntity);
+        //绑定关系
+        if(StringUtils.isEmpty(brandDTO.getCategories())){
+            return this.setResultError("分类数据不能为空");
+        }
+        if(brandDTO.getCategories().contains(",")){
+            List<CategoryBrandEntity> list = new ArrayList<>();
+            String[] categoryArr = brandDTO.getCategories().split(",");
+            Arrays.asList(categoryArr).stream().forEach(str -> {
+                CategoryBrandEntity categoryBrandEntity = new CategoryBrandEntity();
+                categoryBrandEntity.setBrandId(brandEntity.getId());
+                categoryBrandEntity.setCategoryId(Integer.parseInt(str));
+                list.add(categoryBrandEntity);
+            });
+            categoryBrandMapper.insertList(list);
+        }
+        return this.setResultSuccess();
     }
 }
