@@ -20,6 +20,7 @@ import tk.mybatis.mapper.entity.Example;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName BrandServiceImpl
@@ -79,5 +80,69 @@ public class BrandServiceImpl extends BaseApiService implements BrandService {
             categoryBrandMapper.insertList(list);
         }
         return this.setResultSuccess();
+    }
+
+    @Override
+    public Result<JSONObject> editBrand(BrandDTO brandDTO) {
+        BrandEntity brandEntity = BaiduBeanUtil.copyProperties(brandDTO, BrandEntity.class);
+        brandEntity.setLetter(PinyinUtil.getUpperCase(String.valueOf(brandEntity.getName().toCharArray()[0]),false).toCharArray()[0]);
+        brandMapper.updateByPrimaryKeySelective(brandEntity);
+
+        this.deleteCategoryBrandByBrandId(brandEntity.getId());
+
+        this.insertCategoryBrandData(brandDTO.getCategories(),brandEntity.getId());
+
+        return this.setResultSuccess();
+    }
+
+    @Override
+    public Result<JSONObject> deleteBrand(Integer brandId) {
+
+        //删除品牌
+        brandMapper.deleteByPrimaryKey(brandId);
+
+        //通过品牌id删除分类
+        this.deleteCategoryBrandByBrandId(brandId);
+
+        return this.setResultSuccess();
+
+    }
+
+    private void deleteCategoryBrandByBrandId(Integer id){
+        Example example = new Example(CategoryBrandEntity.class);
+        example.createCriteria().andEqualTo("brandId",id);
+        categoryBrandMapper.deleteByExample(example);
+    }
+
+    private void insertCategoryBrandData(String categories,Integer id){
+        if (StringUtils.isEmpty(categories)) throw new RuntimeException("分类不能为空");
+//        List<CategoryBrandEntity> categoryBrandEntities = new ArrayList<>();
+        if(categories.contains(",")){
+            String[] categoryArray = categories.split(",");
+            /*for (String s : categoryArray) {
+                CategoryBrandEntity categoryBrandEntity = new CategoryBrandEntity();
+                categoryBrandEntity.setBrandId(brandEntity.getId());
+                categoryBrandEntity.setCategoryId(Integer.valueOf(s));
+                categoryBrandEntities.add(categoryBrandEntity);
+            }*/
+            List<CategoryBrandEntity> collect = Arrays.asList(categoryArray).stream().map(categoryIdStr -> {
+                CategoryBrandEntity categoryBrandEntity = new CategoryBrandEntity();
+                categoryBrandEntity.setBrandId(id);
+                categoryBrandEntity.setCategoryId(Integer.valueOf(categoryIdStr));
+                return categoryBrandEntity;
+            }).collect(Collectors.toList());
+            categoryBrandMapper.insertList(collect);
+            /*categoryBrandMapper.insertList(
+                Arrays.asList(categoryArray)
+                    .stream()
+                    .map(categoryIdStr -> new CategoryBrandEntity(Integer.valueOf(categoryIdStr),brandEntity.getId()))
+                    .collect(Collectors.toList())
+            );*/
+        }else{
+            CategoryBrandEntity categoryBrandEntity = new CategoryBrandEntity();
+            categoryBrandEntity.setBrandId(id);
+            categoryBrandEntity.setCategoryId(Integer.valueOf(categories));
+            categoryBrandMapper.insertSelective(categoryBrandEntity);
+        }
     }
 }

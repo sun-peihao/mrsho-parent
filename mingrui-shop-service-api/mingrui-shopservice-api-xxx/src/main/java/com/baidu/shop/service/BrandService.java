@@ -8,9 +8,7 @@ import com.baidu.shop.validate.group.MingruiOperation;
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @ClassName BrandService
@@ -26,5 +24,13 @@ public interface BrandService {
 
     @ApiOperation(value = "新增品牌")
     @PostMapping(value = "brand/addBrandInfo")
-    public Result<JSONObject> save(@Validated({MingruiOperation.Add.class})@RequestBody BrandDTO brandDTO);
+    Result<JSONObject> save(@Validated({MingruiOperation.Add.class})@RequestBody BrandDTO brandDTO);
+
+    @ApiOperation(value = "修改品牌")
+    @PutMapping(value = "brand/save")
+    Result<JSONObject> editBrand(@RequestBody BrandDTO brandDTO);
+
+    @ApiOperation(value = "删除品牌")
+    @DeleteMapping(value = "brand/delBrand")
+    Result<JSONObject> deleteBrand(Integer brandId);
 }
