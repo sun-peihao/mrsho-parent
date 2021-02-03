@@ -1,6 +1,7 @@
 package com.baidu.shop.mapper;
 
 import com.baidu.shop.entity.CategoryEntity;
+import tk.mybatis.mapper.additional.idlist.SelectByIdListMapper;
 import tk.mybatis.mapper.common.Mapper;
 
 /**
@@ -10,5 +11,5 @@ import tk.mybatis.mapper.common.Mapper;
  * @Date 2021/1/19
  * @Version V1.0
  **/
-public interface CategoryMapper extends Mapper<CategoryEntity> {
+public interface CategoryMapper extends Mapper<CategoryEntity> , SelectByIdListMapper<CategoryEntity,Integer> {
 }
