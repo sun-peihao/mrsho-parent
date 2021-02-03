@@ -9,10 +9,7 @@ import com.baidu.shop.validate.group.MingruiOperation;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -45,4 +42,8 @@ public interface GoodsService {
     @ApiOperation(value = "修改商品")
     @PutMapping(value = "goods/save")
     Result<JSONUtil> editGoods(@Validated({MingruiOperation.Update.class}) @RequestBody SpuDTO spuDTO);
+
+    @ApiOperation(value = "删除商品")
+    @DeleteMapping(value = "goods/delete")
+    Result<JSONUtil> deleteGoods(Integer spuId);
 }

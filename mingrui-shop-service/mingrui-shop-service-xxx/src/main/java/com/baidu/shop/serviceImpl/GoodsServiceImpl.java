@@ -171,4 +171,23 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
 
         return this.setResultSuccess();
     }
+
+    @Override
+    public Result<JSONUtil> deleteGoods(Integer spuId) {
+        
+        //spu
+        spuMapper.deleteByPrimaryKey(spuId);
+
+        //spuDetail
+        spuDetailMapper.deleteByPrimaryKey(spuId);
+
+        Example example = new Example(SkuEntity.class);
+        example.createCriteria().andEqualTo("spuId",spuId);
+        List<SkuEntity> skuEntities = skuMapper.selectByExample(example);
+        List<Long> skuId = skuEntities.stream().map(skuEntity -> skuEntity.getId()).collect(Collectors.toList());
+        skuMapper.deleteByIdList(skuId);
+        stockMapper.deleteByIdList(skuId);
+
+        return this.setResultSuccess();
+    }
 }
