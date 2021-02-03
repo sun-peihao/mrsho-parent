@@ -46,4 +46,8 @@ public interface GoodsService {
     @ApiOperation(value = "删除商品")
     @DeleteMapping(value = "goods/delete")
     Result<JSONUtil> deleteGoods(Integer spuId);
+
+    @ApiOperation(value = "上下架商品")
+    @PutMapping(value = "goods/down")
+    Result<JSONUtil> downGoods(@Validated({MingruiOperation.Update.class}) @RequestBody SpuDTO spuDTO);
 }

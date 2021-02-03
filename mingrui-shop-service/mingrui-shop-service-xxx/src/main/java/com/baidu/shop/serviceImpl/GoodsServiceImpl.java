@@ -190,4 +190,19 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
 
         return this.setResultSuccess();
     }
+
+    @Override
+    public Result<JSONUtil> downGoods(SpuDTO spuDTO) {
+
+        SpuEntity spuEntity = BaiduBeanUtil.copyProperties(spuDTO, SpuEntity.class);
+        if (spuEntity.getSaleable() == 1){
+            spuEntity.setSaleable(0);
+        }else{
+            spuEntity.setSaleable(1);
+        }
+
+        spuMapper.updateByPrimaryKeySelective(spuEntity);
+
+        return this.setResultSuccess();
+    }
 }
