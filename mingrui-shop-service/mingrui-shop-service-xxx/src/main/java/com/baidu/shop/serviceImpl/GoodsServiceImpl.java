@@ -174,7 +174,7 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
 
     @Override
     public Result<JSONUtil> deleteGoods(Integer spuId) {
-        
+
         //spu
         spuMapper.deleteByPrimaryKey(spuId);
 
