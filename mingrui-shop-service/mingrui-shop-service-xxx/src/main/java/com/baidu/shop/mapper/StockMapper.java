@@ -11,5 +11,5 @@ import tk.mybatis.mapper.common.Mapper;
  * @Date 2021/2/3
  * @Version V1.0
  **/
-public interface StockMapper extends Mapper<StockEntity>{
+public interface StockMapper extends Mapper<StockEntity>, DeleteByIdListMapper<StockEntity,Long> {
 }

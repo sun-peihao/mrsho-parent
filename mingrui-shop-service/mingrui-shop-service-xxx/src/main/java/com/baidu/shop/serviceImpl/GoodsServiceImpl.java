@@ -131,4 +131,44 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
             stockMapper.insertSelective(stockEntity);
         });
     }
+
+    @Override
+    public Result<List<SpuEntity>> getSpuDetailBySpuId(Integer spuId) {
+
+        SpuDetailEntity spuDetailEntity = spuDetailMapper.selectByPrimaryKey(spuId);
+
+        return this.setResultSuccess(spuDetailEntity);
+    }
+
+    @Override
+    public Result<List<SkuDTO>> getSkuBySpuId(Integer spuId) {
+
+        List<SkuDTO> list = skuMapper.getSkuBySpuId(spuId);
+
+        return this.setResultSuccess(list);
+    }
+
+    @Override
+    public Result<JSONUtil> editGoods(SpuDTO spuDTO) {
+        final Date date = new Date();
+        //spu
+        SpuEntity spuEntity = BaiduBeanUtil.copyProperties(spuDTO, SpuEntity.class);
+        spuEntity.setLastUpdateTime(date);
+        spuMapper.updateByPrimaryKeySelective(spuEntity);
+
+        //spuDetail
+        SpuDetailEntity spuDetailEntity = BaiduBeanUtil.copyProperties(spuDTO.getSpuDetail(), SpuDetailEntity.class);
+        spuDetailMapper.updateByPrimaryKeySelective(spuDetailEntity);
+
+        //skus and stock
+        Example example = new Example(SkuEntity.class);
+        example.createCriteria().andEqualTo("spuId",spuEntity.getId());
+        List<SkuEntity> skuEntities = skuMapper.selectByExample(example);
+        List<Long> skuId = skuEntities.stream().map(skuEntity -> skuEntity.getId()).collect(Collectors.toList());
+        skuMapper.deleteByIdList(skuId);
+        stockMapper.deleteByIdList(skuId);
+        this.saveSkusAndStock(spuDTO,spuEntity.getId(),date);
+
+        return this.setResultSuccess();
+    }
 }
